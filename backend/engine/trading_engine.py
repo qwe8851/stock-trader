@@ -181,6 +181,21 @@ class TradingEngine:
         finally:
             self._running = False
 
+    async def _publish_portfolio_snapshot(self) -> None:
+        """최신 포트폴리오 상태를 Redis에 저장 (Celery analytics task가 읽음)."""
+        try:
+            redis = get_redis()
+            snap = {
+                "total_value_usd": self._orders.portfolio_value_usd(self._latest_prices),
+                "available_usd": self._orders.available_usd,
+                "open_positions": self._orders.open_positions,
+                "daily_start_value": self._daily_start_value,
+                "exchange": self._exchange_name,
+            }
+            await redis.set("engine:portfolio_snapshot", json.dumps(snap), ex=7200)
+        except Exception:
+            pass   # 스냅샷 실패는 거래에 영향 없음
+
     async def _on_tick(self, data: dict[str, Any]) -> None:
         symbol: str = data.get("symbol", "BTCUSDT")
         close: float = float(data.get("close", 0))
@@ -189,6 +204,10 @@ class TradingEngine:
 
         self._latest_prices[symbol] = close
         self._refresh_daily_start()
+        # 100번째 틱마다 Redis 스냅샷 갱신
+        self._tick_count = getattr(self, "_tick_count", 0) + 1
+        if self._tick_count % 100 == 0:
+            await self._publish_portfolio_snapshot()
 
         candle = Candle(
             time=data["time"],

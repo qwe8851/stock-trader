@@ -84,7 +84,16 @@ class RiskManager:
         return round(base * max(0.1, min(1.0, confidence)), 2)
 
     def _halt(self, reason: str, value: float | None = None) -> None:
+        import asyncio
         suffix = f" ({value:.2%})" if value is not None else ""
         self._halt_reason = reason + suffix
         self._halted = True
         logger.warning("RiskManager: trading HALTED", extra={"reason": self._halt_reason})
+        # Telegram 경보 (이벤트 루프가 있을 때만)
+        try:
+            from services.notifications.telegram import notify_risk_halt
+            loop = asyncio.get_running_loop()
+            if loop and loop.is_running():
+                asyncio.create_task(notify_risk_halt(self._halt_reason, 0.0))
+        except Exception:
+            pass

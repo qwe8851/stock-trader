@@ -7,6 +7,7 @@ close price. No real exchange calls are made.
 In LIVE mode the adapter's place_order() is called. LIVE mode is only
 available when LIVE_TRADING_ENABLED=true in the environment.
 """
+import asyncio
 import uuid
 from datetime import datetime, timezone
 from typing import Any
@@ -16,6 +17,15 @@ from core.logging import get_logger
 from engine.strategies.base import Signal, SignalAction
 
 logger = get_logger(__name__)
+
+
+def _fire_telegram(order: dict) -> None:
+    """비동기 Telegram 알림을 이벤트 루프 블로킹 없이 발송합니다."""
+    try:
+        from services.notifications.telegram import notify_order
+        asyncio.create_task(notify_order(order))
+    except Exception:
+        pass   # 알림 실패가 주문 실행에 영향 주면 안 됨
 
 
 def _now_iso() -> str:
@@ -145,6 +155,7 @@ class OrderManager:
             "symbol": symbol, "qty": order["quantity"],
             "price": current_price, "size_usd": order["size_usd"],
         })
+        _fire_telegram(order)
         return order
 
     # ------------------------------------------------------------------
@@ -184,6 +195,7 @@ class OrderManager:
                 "raw": result,
             }
             self._orders[str(order["id"])] = order
+            _fire_telegram(order)
             return order
         except Exception as exc:
             logger.error("Live order failed", extra={"error": str(exc)})

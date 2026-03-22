@@ -83,6 +83,19 @@ class Settings(BaseSettings):
     RISK_MAX_OPEN_POSITIONS: int = 3
 
     # -------------------------------------------------------------------------
+    # Telegram Notifications (Phase 6)
+    # Bot token: https://t.me/BotFather → /newbot
+    # Chat ID: send a message to your bot, then:
+    #   curl https://api.telegram.org/bot<TOKEN>/getUpdates
+    # -------------------------------------------------------------------------
+    TELEGRAM_BOT_TOKEN: str = ""
+    TELEGRAM_CHAT_ID: str = ""
+
+    @property
+    def telegram_enabled(self) -> bool:
+        return bool(self.TELEGRAM_BOT_TOKEN and self.TELEGRAM_CHAT_ID)
+
+    # -------------------------------------------------------------------------
     # CORS
     # -------------------------------------------------------------------------
     BACKEND_CORS_ORIGINS: List[str] = [

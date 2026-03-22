@@ -24,7 +24,7 @@ from adapters.base import BaseExchangeAdapter
 from adapters.binance import BinanceAdapter
 from adapters.upbit import UpbitAdapter
 from api.routers import (
-    backtest, exchange_settings, health, ohlcv, orders,
+    analytics, backtest, exchange_settings, health, ohlcv, orders,
     portfolio, sentiment, strategies, websocket,
 )
 from core.config import settings
@@ -170,6 +170,7 @@ def create_app() -> FastAPI:
     app.include_router(backtest.router)
     app.include_router(sentiment.router)
     app.include_router(exchange_settings.router)
+    app.include_router(analytics.router)
 
     return app
 
