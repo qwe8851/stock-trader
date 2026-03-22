@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "004_portfolio_snapshots"
-down_revision = "003_live_orders"
+down_revision = "003_live_orders"   # 003 revision ID
 branch_labels = None
 depends_on = None
 

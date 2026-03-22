@@ -14,7 +14,7 @@ import sqlalchemy as sa
 from fastapi import APIRouter, Query
 
 from core.config import settings
-from db.session import async_session
+from db.session import AsyncSessionLocal as async_session
 from engine.trading_engine import engine as trading_engine
 from services.analytics.performance import (
     compute_overall_performance,

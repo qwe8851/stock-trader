@@ -14,7 +14,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "003_live_orders"
-down_revision = "002_backtest_results"
+down_revision = "002"
 branch_labels = None
 depends_on = None
 

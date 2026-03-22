@@ -31,7 +31,7 @@ def save_portfolio_snapshot() -> dict:
 async def _save_snapshot_async() -> dict:
     import redis.asyncio as aioredis
     import sqlalchemy as sa
-    from db.session import async_session
+    from db.session import AsyncSessionLocal as async_session
 
     # 엔진의 현재 상태를 Redis에서 읽어옴
     r = await aioredis.from_url(settings.REDIS_URL, decode_responses=True)
