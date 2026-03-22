@@ -74,6 +74,29 @@ services:
       "
 
   # ---------------------------------------------------------------------------
+  # Celery Worker - runs backtest tasks in the background
+  # ---------------------------------------------------------------------------
+  celery_worker:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: stock-trader-celery
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-trader}:${POSTGRES_PASSWORD:-traderpassword}@postgres:5432/${POSTGRES_DB:-stocktrader}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../backend:/app
+    command: celery -A tasks.celery_app worker --loglevel=info --concurrency=2
+
+  # ---------------------------------------------------------------------------
   # Frontend - React + Vite
   # ---------------------------------------------------------------------------
   frontend:

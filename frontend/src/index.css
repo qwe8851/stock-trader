@@ -66,4 +66,11 @@
   .badge-gray {
     @apply badge bg-gray-800 text-gray-400;
   }
+
+  /* Form input field */
+  .input-field {
+    @apply w-full bg-surface-3 text-white text-sm rounded-lg px-3 py-1.5
+           border border-white/10 focus:outline-none focus:border-brand
+           transition-colors;
+  }
 }
