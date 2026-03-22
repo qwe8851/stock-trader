@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    @apply bg-surface text-white;
+    font-feature-settings: "liga" 1, "calt" 1;
+  }
+
+  body {
+    @apply min-h-screen bg-surface font-sans antialiased;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-600 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+}
+
+@layer components {
+  /* Card base style */
+  .card {
+    @apply bg-surface-100 border border-gray-800 rounded-xl;
+  }
+
+  /* Numeric value display */
+  .price-value {
+    @apply font-mono tabular-nums;
+  }
+
+  /* Status badge */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-green {
+    @apply badge bg-bull/20 text-bull;
+  }
+
+  .badge-red {
+    @apply badge bg-bear/20 text-bear;
+  }
+
+  .badge-gray {
+    @apply badge bg-gray-800 text-gray-400;
+  }
+}
