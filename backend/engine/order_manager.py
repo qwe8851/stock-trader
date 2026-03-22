@@ -45,6 +45,8 @@ class OrderManager:
         self._orders: dict[str, dict[str, Any]] = {}
         # Simulated portfolio: asset -> quantity
         self._holdings: dict[str, float] = {}
+        # Weighted average buy price per asset (for fee-adjusted P&L gate)
+        self._avg_buy_price: dict[str, float] = {}
         # Starting paper balance in USDT
         self._paper_balance_usd: float = settings.PAPER_INITIAL_BALANCE
         self._available_usd: float = settings.PAPER_INITIAL_BALANCE
@@ -77,6 +79,10 @@ class OrderManager:
 
     def get_holdings(self) -> dict[str, float]:
         return dict(self._holdings)
+
+    def get_avg_buy_price(self, asset: str) -> float:
+        """Return the weighted average buy price for an asset (0 if not held)."""
+        return self._avg_buy_price.get(asset.upper(), 0.0)
 
     async def execute(
         self,
@@ -123,7 +129,15 @@ class OrderManager:
             qty = size_usd / current_price
             fee_usd = size_usd * fee_pct
             self._available_usd -= total_cost
-            self._holdings[base_asset] = self._holdings.get(base_asset, 0.0) + qty
+            # Update weighted average buy price
+            prev_qty = self._holdings.get(base_asset, 0.0)
+            prev_avg = self._avg_buy_price.get(base_asset, current_price)
+            new_qty = prev_qty + qty
+            self._avg_buy_price[base_asset] = (
+                (prev_qty * prev_avg + qty * current_price) / new_qty
+                if new_qty > 0 else current_price
+            )
+            self._holdings[base_asset] = new_qty
             self._open_positions += 1
             status = "FILLED"
 
@@ -141,6 +155,7 @@ class OrderManager:
             self._holdings[base_asset] = held - qty
             if self._holdings[base_asset] <= 0:
                 del self._holdings[base_asset]
+                self._avg_buy_price.pop(base_asset, None)
                 self._open_positions = max(0, self._open_positions - 1)
             self._available_usd += proceeds
             status = "FILLED"

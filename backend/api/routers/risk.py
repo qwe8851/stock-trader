@@ -27,6 +27,8 @@ class RiskConfigUpdate(BaseModel):
     half_kelly: bool | None = None
     kelly_lookback: int | None = Field(None, ge=10, le=500)
     strategy_drawdown_limit_pct: float | None = Field(None, gt=0, le=1)
+    min_profit_pct: float | None = Field(None, ge=0, le=0.1)
+    fee_pct: float | None = Field(None, ge=0, le=0.01)
 
 
 @router.get("/metrics")

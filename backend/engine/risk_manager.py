@@ -43,6 +43,9 @@ class RiskConfig:
     strategy_drawdown_limit_pct: float = 0.15
     # VaR
     var_confidence: float = 0.95
+    # Fee-adjusted profitability gate
+    min_profit_pct: float = 0.003   # minimum net profit (after fees) to allow a SELL
+    fee_pct: float = 0.001          # round-trip fee per leg (used in break-even calc)
 
 
 # ---------------------------------------------------------------------------
@@ -297,7 +300,11 @@ class RiskManager:
     # ------------------------------------------------------------------
 
     def check(
-        self, signal: Signal, portfolio: PortfolioSnapshot
+        self,
+        signal: Signal,
+        portfolio: PortfolioSnapshot,
+        current_price: float = 0.0,
+        avg_buy_price: float = 0.0,
     ) -> tuple[bool, str]:
         if not signal.is_actionable:
             return False, "HOLD signal — no action needed"
@@ -331,6 +338,25 @@ class RiskManager:
         if strategy_name and self._strategy_dd.is_paused(strategy_name):
             reason = f"Strategy '{strategy_name}' paused (drawdown limit)"
             return False, reason
+
+        # Fee-adjusted profitability gate (SELL only)
+        if (
+            signal.action == SignalAction.SELL
+            and current_price > 0
+            and avg_buy_price > 0
+        ):
+            round_trip_cost = 2.0 * self._config.fee_pct
+            net_pct = (current_price - avg_buy_price) / avg_buy_price - round_trip_cost
+            if net_pct < self._config.min_profit_pct:
+                reason = (
+                    f"Net profit {net_pct:.3%} below minimum "
+                    f"{self._config.min_profit_pct:.3%} (fees included)"
+                )
+                logger.debug("SELL rejected: below min profit threshold",
+                             extra={"net_pct": net_pct,
+                                    "min_pct": self._config.min_profit_pct,
+                                    "symbol": signal.symbol})
+                return False, reason
 
         return True, "OK"
 
@@ -466,6 +492,8 @@ class RiskManager:
                 "half_kelly": self._config.half_kelly,
                 "kelly_lookback": self._config.kelly_lookback,
                 "strategy_drawdown_limit_pct": self._config.strategy_drawdown_limit_pct,
+                "min_profit_pct": self._config.min_profit_pct,
+                "fee_pct": self._config.fee_pct,
             },
         }
 

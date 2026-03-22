@@ -53,6 +53,8 @@ class TradingEngine:
             half_kelly=settings.RISK_HALF_KELLY,
             strategy_drawdown_limit_pct=settings.RISK_STRATEGY_DRAWDOWN_LIMIT_PCT,
             var_confidence=settings.RISK_VAR_CONFIDENCE,
+            min_profit_pct=settings.RISK_MIN_PROFIT_PCT,
+            fee_pct=settings.PAPER_FEE_PCT,
         ))
         self._orders = OrderManager()
         # symbol -> list of active strategy instances
@@ -243,7 +245,11 @@ class TradingEngine:
                 daily_start_value=self._daily_start_value,
             )
 
-            approved, reason = self._risk.check(signal, portfolio)
+            # Look up average buy price for fee-adjusted profitability gate
+            base_asset = signal.symbol.replace("USDT", "")
+            avg_buy = self._orders.get_avg_buy_price(base_asset)
+
+            approved, reason = self._risk.check(signal, portfolio, close, avg_buy)
             if not approved:
                 logger.debug("Signal rejected by RiskManager",
                              extra={"reason": reason, "signal": signal.action})

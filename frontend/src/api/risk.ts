@@ -19,6 +19,8 @@ export interface RiskConfig {
   half_kelly: boolean;
   kelly_lookback: number;
   strategy_drawdown_limit_pct: number;
+  min_profit_pct: number;
+  fee_pct: number;
 }
 
 export interface RiskMetrics {

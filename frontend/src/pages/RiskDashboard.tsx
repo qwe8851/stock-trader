@@ -398,6 +398,18 @@ function RiskConfigEditor({
         <Field label="Kelly 기준 거래수" type="number" step="1"
           value={form.kelly_lookback}
           onChange={(v) => setForm((f) => ({ ...f, kelly_lookback: Math.round(v) }))} />
+        <div className="border-t border-gray-800 pt-3 mt-1">
+          <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">수수료 수익성 게이트</div>
+          <Field label="최소 순수익 % (수수료 후)" type="number" step="0.001"
+            value={form.min_profit_pct}
+            onChange={(v) => setForm((f) => ({ ...f, min_profit_pct: v }))} />
+          <Field label="거래소 수수료 % (편도)" type="number" step="0.0001"
+            value={form.fee_pct}
+            onChange={(v) => setForm((f) => ({ ...f, fee_pct: v }))} />
+          <p className="text-xs text-gray-600 mt-1">
+            매도 신호 발생 시 (현재가 − 평균매수가) / 평균매수가 − 2×수수료 &lt; 최소순수익이면 거부됩니다.
+          </p>
+        </div>
 
         {/* Toggles */}
         <div className="flex flex-wrap gap-3 pt-1">

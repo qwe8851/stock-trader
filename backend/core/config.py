@@ -97,6 +97,9 @@ class Settings(BaseSettings):
     RISK_DAILY_LOSS_LIMIT_PCT: float = 0.05   # halt if daily drawdown > 5%
     RISK_MAX_OPEN_POSITIONS: int = 3
 
+    # Fee-adjusted profitability gate (applied to SELL signals)
+    RISK_MIN_PROFIT_PCT: float = 0.003        # 0.3% net profit required after fees
+
     # Kelly Criterion position sizing
     RISK_USE_KELLY: bool = True               # use Kelly when enough trade history
     RISK_KELLY_LOOKBACK: int = 50             # trades used for Kelly calculation
