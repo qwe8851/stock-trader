@@ -83,6 +83,14 @@ class Settings(BaseSettings):
     PAPER_INITIAL_BALANCE: float = 10000.0   # USD starting balance for paper trading
 
     # -------------------------------------------------------------------------
+    # Trading Fees & Order Minimums
+    # -------------------------------------------------------------------------
+    PAPER_FEE_PCT: float = 0.001          # 0.10% simulated fee (Binance maker/taker)
+    BINANCE_FEE_PCT: float = 0.001        # 0.10% Binance spot fee
+    UPBIT_FEE_PCT: float = 0.0005         # 0.05% Upbit spot fee
+    MIN_ORDER_USD: float = 10.0           # Minimum order size in USD
+
+    # -------------------------------------------------------------------------
     # Risk Management
     # -------------------------------------------------------------------------
     RISK_MAX_POSITION_PCT: float = 0.02       # 2% of portfolio per trade

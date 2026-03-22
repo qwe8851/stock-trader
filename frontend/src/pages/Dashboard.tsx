@@ -21,6 +21,8 @@ import { StrategyPanel } from "../components/strategies/StrategyPanel";
 import { SentimentPanel } from "../components/sentiment/SentimentPanel";
 import { usePriceFeed } from "../hooks/usePriceFeed";
 import { useAuthStore } from "../store/authStore";
+import { useQuery } from "@tanstack/react-query";
+import { fetchSettings } from "../api/settings";
 import { clsx } from "clsx";
 
 // Supported symbols for Phase 1
@@ -50,6 +52,12 @@ export default function Dashboard() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
+  const { data: engineSettings } = useQuery({
+    queryKey: ["settings"],
+    queryFn: fetchSettings,
+    refetchInterval: 15_000,
+  });
+  const isLive = engineSettings ? !engineSettings.paper_mode : false;
 
   const latestCandle = candles[candles.length - 1];
   const prevCandle = candles[candles.length - 2];
@@ -71,6 +79,22 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-surface text-white flex flex-col">
+      {/* ------------------------------------------------------------------ */}
+      {/* Live Trading Banner                                                  */}
+      {/* ------------------------------------------------------------------ */}
+      {isLive && (
+        <div className="bg-bear/20 border-b border-bear/40 px-6 py-2 flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-bear animate-pulse" />
+            <span className="text-bear font-semibold">실거래 모드 활성화</span>
+            <span className="text-red-400/70 text-xs">— 실제 자산으로 거래 중입니다. 주의하세요.</span>
+          </div>
+          <Link to="/settings" className="text-xs text-red-400/70 hover:text-bear underline">
+            설정으로 이동
+          </Link>
+        </div>
+      )}
+
       {/* ------------------------------------------------------------------ */}
       {/* Header                                                               */}
       {/* ------------------------------------------------------------------ */}
@@ -295,7 +319,7 @@ export default function Dashboard() {
       {/* Footer                                                               */}
       {/* ------------------------------------------------------------------ */}
       <footer className="border-t border-gray-800 px-6 py-3 flex justify-between items-center text-xs text-gray-600">
-        <span>Phase 5 · Live Trading + Multi-Exchange · Binance / Upbit</span>
+        <span>Phase 13 · Live Trading + Multi-Exchange · Binance / Upbit</span>
         <span>{new Date().toLocaleDateString()}</span>
       </footer>
     </div>

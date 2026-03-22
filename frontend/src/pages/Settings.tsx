@@ -18,8 +18,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import {
   fetchSettings,
+  fetchFeeInfo,
   switchExchange,
   toggleLiveTrading,
+  testCredentials,
+  fetchLiveBalance,
 } from "../api/settings";
 
 export default function Settings() {
@@ -27,12 +30,47 @@ export default function Settings() {
   const [confirmLive, setConfirmLive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [testingCreds, setTestingCreds] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
+  const [liveBalance, setLiveBalance] = useState<Record<string, { free: string; locked: string }> | null>(null);
+  const [loadingBalance, setLoadingBalance] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["settings"],
     queryFn: fetchSettings,
     refetchInterval: 10_000,
   });
+
+  const { data: feeData } = useQuery({
+    queryKey: ["fee-info"],
+    queryFn: fetchFeeInfo,
+  });
+
+  async function handleTestCredentials() {
+    setTestingCreds(true);
+    setTestResult(null);
+    try {
+      const result = await testCredentials();
+      setTestResult(`✓ 유효한 자격증명 — ${result.assets_with_balance}개 자산 잔고 확인`);
+    } catch (err: unknown) {
+      setTestResult(`✗ ${err instanceof Error ? err.message : "검증 실패"}`);
+    } finally {
+      setTestingCreds(false);
+    }
+  }
+
+  async function handleFetchLiveBalance() {
+    setLoadingBalance(true);
+    setLiveBalance(null);
+    try {
+      const result = await fetchLiveBalance();
+      setLiveBalance(result.balance);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "잔고 조회 실패");
+    } finally {
+      setLoadingBalance(false);
+    }
+  }
 
   const exchangeMutation = useMutation({
     mutationFn: (exchange: "binance" | "upbit") => switchExchange(exchange),
@@ -256,6 +294,119 @@ export default function Settings() {
           <p className="text-xs text-gray-600">
             API 키는 <code>.env</code> 파일에서 설정합니다. 시장 데이터 조회는 키 없이도 가능합니다.
           </p>
+
+          {/* Credential test */}
+          <div className="pt-1 flex items-center gap-3">
+            <button
+              onClick={handleTestCredentials}
+              disabled={testingCreds}
+              className="px-3 py-1.5 text-xs border border-gray-700 rounded text-gray-400 hover:text-white hover:border-gray-500 transition-colors disabled:opacity-40"
+            >
+              {testingCreds ? "검증 중…" : "자격증명 테스트"}
+            </button>
+            {testResult && (
+              <span
+                className={clsx(
+                  "text-xs",
+                  testResult.startsWith("✓") ? "text-bull" : "text-bear"
+                )}
+              >
+                {testResult}
+              </span>
+            )}
+          </div>
+        </section>
+
+        {/* ── Fee Information ────────────────────────────────────────────── */}
+        {feeData && (
+          <section className="card p-5 space-y-3">
+            <h2 className="font-semibold text-base">수수료 & 최소 주문</h2>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-gray-500 border-b border-gray-800">
+                  <th className="text-left pb-2">모드</th>
+                  <th className="text-right pb-2">Maker</th>
+                  <th className="text-right pb-2">Taker</th>
+                  <th className="text-right pb-2">최소 주문</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800 text-sm">
+                <tr>
+                  <td className="py-2">Binance (Live)</td>
+                  <td className="py-2 text-right font-mono text-gray-300">
+                    {(feeData.binance.maker_pct * 100).toFixed(2)}%
+                  </td>
+                  <td className="py-2 text-right font-mono text-gray-300">
+                    {(feeData.binance.taker_pct * 100).toFixed(2)}%
+                  </td>
+                  <td className="py-2 text-right font-mono text-gray-400">
+                    ${feeData.binance.min_order_usd}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2">Upbit (Live)</td>
+                  <td className="py-2 text-right font-mono text-gray-300">
+                    {(feeData.upbit.maker_pct * 100).toFixed(2)}%
+                  </td>
+                  <td className="py-2 text-right font-mono text-gray-300">
+                    {(feeData.upbit.taker_pct * 100).toFixed(2)}%
+                  </td>
+                  <td className="py-2 text-right font-mono text-gray-400">
+                    ₩{feeData.upbit.min_order_krw.toLocaleString()}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2">페이퍼 트레이딩</td>
+                  <td className="py-2 text-right font-mono text-gray-300" colSpan={2}>
+                    {(feeData.paper.fee_pct * 100).toFixed(2)}% (시뮬레이션)
+                  </td>
+                  <td className="py-2 text-right font-mono text-gray-400">
+                    ${feeData.paper.min_order_usd}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p className="text-xs text-gray-600">
+              페이퍼 트레이딩에서도 수수료가 자동 차감됩니다. 실제 거래 결과와 유사한 성과 측정이 가능합니다.
+            </p>
+          </section>
+        )}
+
+        {/* ── Live Balance ───────────────────────────────────────────────── */}
+        <section className="card p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-base">실거래 잔고</h2>
+            <button
+              onClick={handleFetchLiveBalance}
+              disabled={loadingBalance}
+              className="px-3 py-1.5 text-xs border border-gray-700 rounded text-gray-400 hover:text-white hover:border-gray-500 transition-colors disabled:opacity-40"
+            >
+              {loadingBalance ? "조회 중…" : "잔고 조회"}
+            </button>
+          </div>
+          <p className="text-xs text-gray-600">
+            거래소 API 키가 설정된 경우 실제 잔고를 조회할 수 있습니다. 주문은 발생하지 않습니다.
+          </p>
+          {liveBalance && (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-gray-500 border-b border-gray-800">
+                  <th className="text-left pb-2">자산</th>
+                  <th className="text-right pb-2">가용</th>
+                  <th className="text-right pb-2">잠금</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {Object.entries(liveBalance).map(([asset, bal]) => (
+                  <tr key={asset}>
+                    <td className="py-2 font-mono text-gray-200">{asset}</td>
+                    <td className="py-2 text-right font-mono text-gray-300">{bal.free}</td>
+                    <td className="py-2 text-right font-mono text-gray-500">{bal.locked}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </section>
       </div>
 

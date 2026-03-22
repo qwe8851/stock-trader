@@ -23,6 +23,11 @@ from core.config import settings
 from core.logging import get_logger
 from engine.trading_engine import engine as trading_engine
 
+_FEE_RATES = {
+    "binance": {"maker": settings.BINANCE_FEE_PCT, "taker": settings.BINANCE_FEE_PCT},
+    "upbit": {"maker": settings.UPBIT_FEE_PCT, "taker": settings.UPBIT_FEE_PCT},
+}
+
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 logger = get_logger(__name__)
 
@@ -181,3 +186,93 @@ async def toggle_live_trading(body: LiveTradingRequest) -> dict[str, Any]:
         "live_trading_enabled": settings.LIVE_TRADING_ENABLED,
         "paper_mode": settings.PAPER_TRADING_MODE,
     }
+
+
+# ---------------------------------------------------------------------------
+# GET /api/settings/fees
+# ---------------------------------------------------------------------------
+
+@router.get("/fees")
+async def get_fee_info() -> dict[str, Any]:
+    """Return fee rates and minimum order sizes per exchange."""
+    return {
+        "binance": {
+            "maker_pct": settings.BINANCE_FEE_PCT,
+            "taker_pct": settings.BINANCE_FEE_PCT,
+            "min_order_usd": settings.MIN_ORDER_USD,
+        },
+        "upbit": {
+            "maker_pct": settings.UPBIT_FEE_PCT,
+            "taker_pct": settings.UPBIT_FEE_PCT,
+            "min_order_krw": 5000,
+            "min_order_usd": settings.MIN_ORDER_USD,
+        },
+        "paper": {
+            "fee_pct": settings.PAPER_FEE_PCT,
+            "min_order_usd": settings.MIN_ORDER_USD,
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# POST /api/settings/test-credentials
+# ---------------------------------------------------------------------------
+
+@router.post("/test-credentials")
+async def test_credentials() -> dict[str, Any]:
+    """
+    Validate API credentials for the active exchange by fetching account balance.
+    Does NOT place any orders.
+    """
+    exchange = trading_engine._exchange_name.lower()
+
+    if exchange == "upbit":
+        if not settings.has_upbit_credentials:
+            raise HTTPException(400, "Upbit API credentials not configured")
+        adapter = UpbitAdapter()
+    else:
+        if not settings.has_binance_credentials:
+            raise HTTPException(400, "Binance API credentials not configured")
+        adapter = BinanceAdapter()
+
+    try:
+        balance = await adapter.get_balance()
+        return {
+            "exchange": exchange,
+            "valid": True,
+            "assets_with_balance": len(balance),
+        }
+    except Exception as exc:
+        raise HTTPException(400, f"Credential validation failed: {exc}") from exc
+    finally:
+        await adapter.close()
+
+
+# ---------------------------------------------------------------------------
+# GET /api/settings/live-balance
+# ---------------------------------------------------------------------------
+
+@router.get("/live-balance")
+async def get_live_balance() -> dict[str, Any]:
+    """
+    Fetch real account balance from the current exchange adapter.
+    Requires API credentials to be configured.
+    """
+    exchange = trading_engine._exchange_name.lower()
+
+    if exchange == "upbit":
+        if not settings.has_upbit_credentials:
+            raise HTTPException(400, "Upbit API credentials not configured")
+        adapter = UpbitAdapter()
+    else:
+        if not settings.has_binance_credentials:
+            raise HTTPException(400, "Binance API credentials not configured")
+        adapter = BinanceAdapter()
+
+    try:
+        balance = await adapter.get_balance()
+        return {"exchange": exchange, "balance": balance}
+    except Exception as exc:
+        raise HTTPException(502, f"Failed to fetch balance: {exc}") from exc
+    finally:
+        await adapter.close()

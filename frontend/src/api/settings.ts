@@ -45,3 +45,45 @@ export async function toggleLiveTrading(
     throw new Error(err.detail ?? "Failed to toggle live trading");
   }
 }
+
+export interface FeeInfo {
+  binance: { maker_pct: number; taker_pct: number; min_order_usd: number };
+  upbit: { maker_pct: number; taker_pct: number; min_order_krw: number; min_order_usd: number };
+  paper: { fee_pct: number; min_order_usd: number };
+}
+
+export async function fetchFeeInfo(): Promise<FeeInfo> {
+  const res = await fetch(`${BASE}/api/settings/fees`, { headers: authHeader() });
+  if (!res.ok) throw new Error("Failed to fetch fee info");
+  return res.json();
+}
+
+export async function testCredentials(): Promise<{
+  exchange: string;
+  valid: boolean;
+  assets_with_balance: number;
+}> {
+  const res = await fetch(`${BASE}/api/settings/test-credentials`, {
+    method: "POST",
+    headers: authHeader(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { detail?: string }).detail ?? "Credential test failed");
+  }
+  return res.json();
+}
+
+export async function fetchLiveBalance(): Promise<{
+  exchange: string;
+  balance: Record<string, { free: string; locked: string }>;
+}> {
+  const res = await fetch(`${BASE}/api/settings/live-balance`, {
+    headers: authHeader(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { detail?: string }).detail ?? "Failed to fetch balance");
+  }
+  return res.json();
+}

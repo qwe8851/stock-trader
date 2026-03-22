@@ -106,14 +106,23 @@ class OrderManager:
         symbol = signal.symbol          # e.g. "BTCUSDT"
         base_asset = symbol.replace("USDT", "")   # e.g. "BTC"
 
+        if size_usd < settings.MIN_ORDER_USD:
+            logger.warning("Paper order skipped: below minimum order size",
+                           extra={"size_usd": size_usd, "min": settings.MIN_ORDER_USD})
+            return None
+
+        fee_pct = settings.PAPER_FEE_PCT
+
         if signal.action == SignalAction.BUY:
-            if self._available_usd < size_usd:
+            total_cost = size_usd * (1 + fee_pct)
+            if self._available_usd < total_cost:
                 logger.warning("Paper order skipped: insufficient balance",
-                               extra={"available": self._available_usd, "needed": size_usd})
+                               extra={"available": self._available_usd, "needed": total_cost})
                 return None
 
             qty = size_usd / current_price
-            self._available_usd -= size_usd
+            fee_usd = size_usd * fee_pct
+            self._available_usd -= total_cost
             self._holdings[base_asset] = self._holdings.get(base_asset, 0.0) + qty
             self._open_positions += 1
             status = "FILLED"
@@ -126,7 +135,9 @@ class OrderManager:
                 return None
 
             qty = min(held, size_usd / current_price)
-            proceeds = qty * current_price
+            gross_proceeds = qty * current_price
+            fee_usd = gross_proceeds * fee_pct
+            proceeds = gross_proceeds - fee_usd
             self._holdings[base_asset] = held - qty
             if self._holdings[base_asset] <= 0:
                 del self._holdings[base_asset]
@@ -143,6 +154,8 @@ class OrderManager:
             "quantity": round(qty, 8),
             "price": current_price,
             "size_usd": round(qty * current_price, 2),
+            "fee_usd": round(fee_usd, 4),
+            "fee_pct": fee_pct,
             "status": status,
             "mode": "PAPER",
             "strategy": signal.metadata.get("strategy", ""),
