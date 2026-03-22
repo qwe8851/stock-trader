@@ -116,6 +116,12 @@ export default function Dashboard() {
             ))}
           </div>
           <Link
+            to="/portfolio"
+            className="px-3 py-1.5 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg transition-colors"
+          >
+            포트폴리오
+          </Link>
+          <Link
             to="/analytics"
             className="px-3 py-1.5 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg transition-colors"
           >
