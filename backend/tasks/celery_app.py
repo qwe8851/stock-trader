@@ -5,6 +5,7 @@ Broker  : Redis  (same instance used for pub/sub)
 Backend : Redis  (stores task state and results)
 """
 from celery import Celery
+from celery.schedules import crontab
 
 from core.config import settings
 
@@ -12,7 +13,7 @@ celery_app = Celery(
     "stock_trader",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
-    include=["tasks.backtest_tasks"],
+    include=["tasks.backtest_tasks", "tasks.sentiment_tasks"],
 )
 
 celery_app.conf.update(
@@ -21,9 +22,14 @@ celery_app.conf.update(
     accept_content=["json"],
     timezone="UTC",
     enable_utc=True,
-    # Keep results for 24 hours
     result_expires=86400,
-    # Retry failed tasks up to 3 times with exponential back-off
     task_acks_late=True,
     task_reject_on_worker_lost=True,
+    # Periodic tasks (Celery beat)
+    beat_schedule={
+        "refresh-sentiment-every-15-minutes": {
+            "task": "tasks.refresh_all_sentiment",
+            "schedule": crontab(minute="*/15"),
+        },
+    },
 )

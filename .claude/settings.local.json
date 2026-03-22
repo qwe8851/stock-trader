@@ -7,7 +7,11 @@
       "Bash(curl -s http://localhost:8000/api/portfolio)",
       "Bash(python3 -m json.tool)",
       "Bash(curl -s -X POST http://localhost:8000/api/backtest -H \"Content-Type: application/json\" -d '{\"\"\"\"strategy\"\"\"\":\"\"\"\"RSI\"\"\"\",\"\"\"\"symbol\"\"\"\":\"\"\"\"BTCUSDT\"\"\"\",\"\"\"\"interval\"\"\"\":\"\"\"\"1h\"\"\"\",\"\"\"\"start_date\"\"\"\":\"\"\"\"2024-01-01\"\"\"\",\"\"\"\"end_date\"\"\"\":\"\"\"\"2024-03-31\"\"\"\",\"\"\"\"initial_capital\"\"\"\":10000}')",
-      "Bash(curl -s http://localhost:8000/api/backtest/0ca7b57f-9b2b-4db2-b06b-706315a435d1)"
+      "Bash(curl -s http://localhost:8000/api/backtest/0ca7b57f-9b2b-4db2-b06b-706315a435d1)",
+      "Bash(curl -s http://localhost:8000/api/sentiment/BTCUSDT)",
+      "Bash(curl -s -X POST http://localhost:8000/api/sentiment/BTCUSDT/refresh)",
+      "Bash(grep -v \"^$\")",
+      "Bash(docker exec:*)"
     ]
   }
 }

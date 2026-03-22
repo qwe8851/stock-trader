@@ -20,6 +20,7 @@ from engine.risk_manager import PortfolioSnapshot, RiskConfig, RiskManager
 from engine.strategies.base import BaseStrategy, Candle, Signal, SignalAction
 from engine.strategies.macd_strategy import MACDStrategy
 from engine.strategies.rsi_strategy import RSIStrategy
+from engine.strategies.sentiment_strategy import SentimentStrategy
 
 logger = get_logger(__name__)
 
@@ -27,6 +28,7 @@ logger = get_logger(__name__)
 STRATEGY_REGISTRY: dict[str, type[BaseStrategy]] = {
     "RSI": RSIStrategy,
     "MACD": MACDStrategy,
+    "SENTIMENT": SentimentStrategy,
 }
 
 

@@ -58,6 +58,7 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-trader}:${POSTGRES_PASSWORD:-traderpassword}@postgres:5432/${POSTGRES_DB:-stocktrader}
       REDIS_URL: redis://redis:6379/0
+      PYTHONPATH: /app
     ports:
       - "8000:8000"
     depends_on:
@@ -87,6 +88,7 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-trader}:${POSTGRES_PASSWORD:-traderpassword}@postgres:5432/${POSTGRES_DB:-stocktrader}
       REDIS_URL: redis://redis:6379/0
+      PYTHONPATH: /app
     depends_on:
       postgres:
         condition: service_healthy
@@ -94,7 +96,32 @@ services:
         condition: service_healthy
     volumes:
       - ../backend:/app
+      - huggingface_cache:/root/.cache/huggingface   # persist FinBERT model
     command: celery -A tasks.celery_app worker --loglevel=info --concurrency=2
+
+  # ---------------------------------------------------------------------------
+  # Celery Beat - periodic task scheduler (sentiment refresh every 15 min)
+  # ---------------------------------------------------------------------------
+  celery_beat:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: stock-trader-celery-beat
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-trader}:${POSTGRES_PASSWORD:-traderpassword}@postgres:5432/${POSTGRES_DB:-stocktrader}
+      REDIS_URL: redis://redis:6379/0
+      PYTHONPATH: /app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../backend:/app
+    command: celery -A tasks.celery_app beat --loglevel=info
 
   # ---------------------------------------------------------------------------
   # Frontend - React + Vite
@@ -116,6 +143,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  huggingface_cache:   # FinBERT model cache — persists across container restarts
 
 networks:
   default:

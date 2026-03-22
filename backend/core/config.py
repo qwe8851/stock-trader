@@ -55,6 +55,12 @@ class Settings(BaseSettings):
     # -------------------------------------------------------------------------
     LIVE_TRADING_ENABLED: bool = False
     PAPER_TRADING_MODE: bool = True
+
+    # -------------------------------------------------------------------------
+    # Sentiment / News
+    # -------------------------------------------------------------------------
+    NEWSAPI_KEY: str = ""          # Optional — CryptoPanic RSS works without it
+    OPENAI_API_KEY: str = ""       # Optional — for future GPT enhancement
     PAPER_INITIAL_BALANCE: float = 10000.0   # USD starting balance for paper trading
 
     # -------------------------------------------------------------------------

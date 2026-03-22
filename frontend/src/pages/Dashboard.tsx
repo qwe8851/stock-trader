@@ -17,6 +17,7 @@ import CandlestickChart from "../components/charts/CandlestickChart";
 import { PortfolioCard } from "../components/portfolio/PortfolioCard";
 import { OrdersTable } from "../components/orders/OrdersTable";
 import { StrategyPanel } from "../components/strategies/StrategyPanel";
+import { SentimentPanel } from "../components/sentiment/SentimentPanel";
 import { usePriceFeed } from "../hooks/usePriceFeed";
 import { clsx } from "clsx";
 
@@ -223,8 +224,9 @@ export default function Dashboard() {
         <div className="lg:col-span-3">
           <PortfolioCard />
         </div>
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-4">
           <StrategyPanel />
+          <SentimentPanel symbol={symbol} />
         </div>
         <div className="lg:col-span-2">
           <OrdersTable />

@@ -19,7 +19,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from adapters.binance import BinanceAdapter
-from api.routers import backtest, health, ohlcv, orders, portfolio, strategies, websocket
+from api.routers import backtest, health, ohlcv, orders, portfolio, sentiment, strategies, websocket
 from core.config import settings
 from core.logging import get_logger, setup_logging
 from db.redis import close_redis, init_redis
@@ -149,6 +149,7 @@ def create_app() -> FastAPI:
     app.include_router(orders.router)
     app.include_router(portfolio.router)
     app.include_router(backtest.router)
+    app.include_router(sentiment.router)
 
     return app
 
