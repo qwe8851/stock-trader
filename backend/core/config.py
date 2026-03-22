@@ -36,12 +36,24 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # -------------------------------------------------------------------------
+    # Exchange Selection
+    # -------------------------------------------------------------------------
+    ACTIVE_EXCHANGE: str = "binance"   # "binance" | "upbit"
+
+    # -------------------------------------------------------------------------
     # Binance Exchange
     # Keys are optional - public endpoints work without authentication
     # -------------------------------------------------------------------------
     BINANCE_API_KEY: str = ""
     BINANCE_SECRET_KEY: str = ""
     BINANCE_TESTNET: bool = False
+
+    # -------------------------------------------------------------------------
+    # Upbit Exchange (Korean crypto exchange — KRW markets)
+    # Keys are required for order placement; market data works without keys
+    # -------------------------------------------------------------------------
+    UPBIT_ACCESS_KEY: str = ""
+    UPBIT_SECRET_KEY: str = ""
 
     # -------------------------------------------------------------------------
     # JWT Security
@@ -94,6 +106,10 @@ class Settings(BaseSettings):
     def has_binance_credentials(self) -> bool:
         """True when API key and secret are both provided."""
         return bool(self.BINANCE_API_KEY and self.BINANCE_SECRET_KEY)
+
+    @property
+    def has_upbit_credentials(self) -> bool:
+        return bool(self.UPBIT_ACCESS_KEY and self.UPBIT_SECRET_KEY)
 
 
 @lru_cache

@@ -13,6 +13,7 @@
  *  └─────────────────────────────────────────────┘
  */
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import CandlestickChart from "../components/charts/CandlestickChart";
 import { PortfolioCard } from "../components/portfolio/PortfolioCard";
 import { OrdersTable } from "../components/orders/OrdersTable";
@@ -92,7 +93,7 @@ export default function Dashboard() {
           </span>
         </div>
 
-        {/* Symbol selector */}
+        {/* Symbol selector + nav links */}
         <div className="flex items-center gap-3">
           <div className="flex rounded-lg overflow-hidden border border-gray-700">
             {SYMBOLS.map((s) => (
@@ -110,6 +111,18 @@ export default function Dashboard() {
               </button>
             ))}
           </div>
+          <Link
+            to="/backtest"
+            className="px-3 py-1.5 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg transition-colors"
+          >
+            백테스트
+          </Link>
+          <Link
+            to="/settings"
+            className="px-3 py-1.5 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg transition-colors"
+          >
+            설정
+          </Link>
         </div>
       </header>
 
@@ -237,7 +250,7 @@ export default function Dashboard() {
       {/* Footer                                                               */}
       {/* ------------------------------------------------------------------ */}
       <footer className="border-t border-gray-800 px-6 py-3 flex justify-between items-center text-xs text-gray-600">
-        <span>Phase 2 · Trading Engine + Paper Trading · Binance public API</span>
+        <span>Phase 5 · Live Trading + Multi-Exchange · Binance / Upbit</span>
         <span>{new Date().toLocaleDateString()}</span>
       </footer>
     </div>

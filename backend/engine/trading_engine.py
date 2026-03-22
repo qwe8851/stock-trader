@@ -2,16 +2,21 @@
 Trading Engine — the central async event loop.
 
 Flow:
-  1. Subscribe to Redis pub/sub for live price ticks (published by BinanceAdapter)
+  1. Subscribe to Redis pub/sub for live price ticks (published by exchange adapter)
   2. Convert each tick to a Candle and feed it to all active strategies
   3. Pass any actionable Signal through RiskManager
-  4. If approved, execute via OrderManager
+  4. If approved, execute via OrderManager (paper or live)
+
+Exchange support:
+  - Binance (USDT markets, default)
+  - Upbit (KRW markets, optional)
 """
 import asyncio
 import json
 from datetime import date, datetime, timezone
 from typing import Any
 
+from adapters.base import BaseExchangeAdapter
 from core.config import settings
 from core.logging import get_logger
 from db.redis import get_redis
@@ -53,6 +58,9 @@ class TradingEngine:
         # Latest price per symbol (for portfolio valuation)
         self._latest_prices: dict[str, float] = {}
         self._running = False
+        # Active exchange adapter (injected from api/main.py)
+        self._adapter: BaseExchangeAdapter | None = None
+        self._exchange_name: str = settings.ACTIVE_EXCHANGE
 
     # ------------------------------------------------------------------
     # Strategy management (called from REST API)
@@ -101,11 +109,19 @@ class TradingEngine:
                 })
         return result
 
+    def set_adapter(self, adapter: BaseExchangeAdapter, exchange_name: str) -> None:
+        """Inject the active exchange adapter. Called by api/main.py on startup."""
+        self._adapter = adapter
+        self._exchange_name = exchange_name
+        logger.info("Exchange adapter set", extra={"exchange": exchange_name})
+
     def get_status(self) -> dict[str, Any]:
         portfolio_value = self._orders.portfolio_value_usd(self._latest_prices)
         return {
             "running": self._running,
             "paper_mode": settings.PAPER_TRADING_MODE,
+            "live_trading_enabled": settings.LIVE_TRADING_ENABLED,
+            "exchange": self._exchange_name,
             "risk_halted": self._risk.is_halted,
             "strategies": self.list_strategies(),
             "portfolio": {
@@ -211,6 +227,7 @@ class TradingEngine:
                 signal=signal,
                 size_usd=size_usd,
                 current_price=close,
+                adapter=self._adapter,
             )
 
     def _refresh_daily_start(self) -> None:
