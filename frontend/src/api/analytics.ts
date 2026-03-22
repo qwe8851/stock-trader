@@ -1,3 +1,5 @@
+import { authHeader } from "./auth";
+
 const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export interface StrategyPerformance {
@@ -31,19 +33,19 @@ export interface PnlPoint {
 }
 
 export async function fetchPerformance(): Promise<StrategyPerformance[]> {
-  const res = await fetch(`${BASE}/api/analytics/performance`);
+  const res = await fetch(`${BASE}/api/analytics/performance`, { headers: authHeader() });
   if (!res.ok) throw new Error("Failed to fetch performance");
   return res.json();
 }
 
 export async function fetchSummary(): Promise<AnalyticsSummary> {
-  const res = await fetch(`${BASE}/api/analytics/summary`);
+  const res = await fetch(`${BASE}/api/analytics/summary`, { headers: authHeader() });
   if (!res.ok) throw new Error("Failed to fetch summary");
   return res.json();
 }
 
 export async function fetchPnlHistory(limit = 168): Promise<PnlPoint[]> {
-  const res = await fetch(`${BASE}/api/analytics/pnl-history?limit=${limit}`);
+  const res = await fetch(`${BASE}/api/analytics/pnl-history?limit=${limit}`, { headers: authHeader() });
   if (!res.ok) throw new Error("Failed to fetch P&L history");
   return res.json();
 }

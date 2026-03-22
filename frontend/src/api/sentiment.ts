@@ -1,3 +1,5 @@
+import { authHeader } from "./auth";
+
 const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export interface NewsItem {
@@ -18,11 +20,11 @@ export interface SentimentData {
 }
 
 export async function fetchSentiment(symbol: string): Promise<SentimentData> {
-  const res = await fetch(`${BASE}/api/sentiment/${symbol}`);
+  const res = await fetch(`${BASE}/api/sentiment/${symbol}`, { headers: authHeader() });
   if (!res.ok) throw new Error("Failed to fetch sentiment");
   return res.json();
 }
 
 export async function triggerSentimentRefresh(symbol: string): Promise<void> {
-  await fetch(`${BASE}/api/sentiment/${symbol}/refresh`, { method: "POST" });
+  await fetch(`${BASE}/api/sentiment/${symbol}/refresh`, { method: "POST", headers: authHeader() });
 }

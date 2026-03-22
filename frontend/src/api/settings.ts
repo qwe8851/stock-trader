@@ -1,3 +1,5 @@
+import { authHeader } from "./auth";
+
 const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export interface ExchangeSettings {
@@ -12,7 +14,7 @@ export interface ExchangeSettings {
 }
 
 export async function fetchSettings(): Promise<ExchangeSettings> {
-  const res = await fetch(`${BASE}/api/settings`);
+  const res = await fetch(`${BASE}/api/settings`, { headers: authHeader() });
   if (!res.ok) throw new Error("Failed to fetch settings");
   return res.json();
 }
@@ -20,7 +22,7 @@ export async function fetchSettings(): Promise<ExchangeSettings> {
 export async function switchExchange(exchange: "binance" | "upbit"): Promise<void> {
   const res = await fetch(`${BASE}/api/settings/exchange`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeader() },
     body: JSON.stringify({ exchange }),
   });
   if (!res.ok) {
@@ -35,7 +37,7 @@ export async function toggleLiveTrading(
 ): Promise<void> {
   const res = await fetch(`${BASE}/api/settings/live-trading`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeader() },
     body: JSON.stringify({ enabled, confirm }),
   });
   if (!res.ok) {

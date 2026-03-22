@@ -1,3 +1,5 @@
+import { authHeader } from "./auth";
+
 const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export interface StrategyInfo {
@@ -14,7 +16,7 @@ export async function fetchStrategies(): Promise<{
   available: string[];
   status: unknown;
 }> {
-  const res = await fetch(`${BASE}/api/strategies`);
+  const res = await fetch(`${BASE}/api/strategies`, { headers: authHeader() });
   if (!res.ok) throw new Error("Failed to fetch strategies");
   return res.json();
 }
@@ -26,7 +28,7 @@ export async function addStrategy(
 ): Promise<void> {
   const res = await fetch(`${BASE}/api/strategies`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeader() },
     body: JSON.stringify({ name, symbol, config }),
   });
   if (!res.ok) {
@@ -38,10 +40,11 @@ export async function addStrategy(
 export async function removeStrategy(name: string, symbol: string): Promise<void> {
   const res = await fetch(`${BASE}/api/strategies/${name}?symbol=${symbol}`, {
     method: "DELETE",
+    headers: authHeader(),
   });
   if (!res.ok) throw new Error("Failed to remove strategy");
 }
 
 export async function resumeTrading(): Promise<void> {
-  await fetch(`${BASE}/api/strategies/resume`, { method: "POST" });
+  await fetch(`${BASE}/api/strategies/resume`, { method: "POST", headers: authHeader() });
 }

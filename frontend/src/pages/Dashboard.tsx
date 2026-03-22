@@ -13,13 +13,14 @@
  *  └─────────────────────────────────────────────┘
  */
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import CandlestickChart from "../components/charts/CandlestickChart";
 import { PortfolioCard } from "../components/portfolio/PortfolioCard";
 import { OrdersTable } from "../components/orders/OrdersTable";
 import { StrategyPanel } from "../components/strategies/StrategyPanel";
 import { SentimentPanel } from "../components/sentiment/SentimentPanel";
 import { usePriceFeed } from "../hooks/usePriceFeed";
+import { useAuthStore } from "../store/authStore";
 import { clsx } from "clsx";
 
 // Supported symbols for Phase 1
@@ -46,6 +47,9 @@ function formatVolume(volume: number): string {
 export default function Dashboard() {
   const [symbol, setSymbol] = useState("BTCUSDT");
   const { price, candles, isConnected, change } = usePriceFeed(symbol);
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
 
   const latestCandle = candles[candles.length - 1];
   const prevCandle = candles[candles.length - 2];
@@ -129,6 +133,17 @@ export default function Dashboard() {
           >
             설정
           </Link>
+
+          {/* User info + logout */}
+          <div className="flex items-center gap-2 border-l border-gray-700 pl-3">
+            <span className="text-xs text-gray-400 max-w-[140px] truncate">{user?.email}</span>
+            <button
+              onClick={() => { logout(); navigate("/login", { replace: true }); }}
+              className="px-2 py-1 text-xs text-gray-500 hover:text-bear border border-gray-700 rounded transition-colors"
+            >
+              로그아웃
+            </button>
+          </div>
         </div>
       </header>
 

@@ -63,6 +63,13 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # -------------------------------------------------------------------------
+    # API Key Encryption (Phase 7)
+    # Used to AES-encrypt user exchange API keys stored in DB
+    # Generate: python -c "import secrets; print(secrets.token_hex(32))"
+    # -------------------------------------------------------------------------
+    SECRET_KEY_ENCRYPTION_KEY: str = "change-me-generate-a-strong-encryption-key"
+
+    # -------------------------------------------------------------------------
     # Trading Safety
     # -------------------------------------------------------------------------
     LIVE_TRADING_ENABLED: bool = False

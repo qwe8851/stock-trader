@@ -1,3 +1,5 @@
+import { authHeader } from "./auth";
+
 const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export interface Order {
@@ -15,7 +17,7 @@ export interface Order {
 }
 
 export async function fetchOrders(limit = 50): Promise<Order[]> {
-  const res = await fetch(`${BASE}/api/orders?limit=${limit}`);
+  const res = await fetch(`${BASE}/api/orders?limit=${limit}`, { headers: authHeader() });
   if (!res.ok) throw new Error("Failed to fetch orders");
   const data = await res.json();
   return data.orders;

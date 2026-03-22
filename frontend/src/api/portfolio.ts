@@ -1,3 +1,5 @@
+import { authHeader } from "./auth";
+
 const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export interface Portfolio {
@@ -12,7 +14,7 @@ export interface Portfolio {
 }
 
 export async function fetchPortfolio(): Promise<Portfolio> {
-  const res = await fetch(`${BASE}/api/portfolio`);
+  const res = await fetch(`${BASE}/api/portfolio`, { headers: authHeader() });
   if (!res.ok) throw new Error("Failed to fetch portfolio");
   return res.json();
 }

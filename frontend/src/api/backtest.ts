@@ -1,3 +1,5 @@
+import { authHeader } from "./auth";
+
 const BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export interface BacktestRequest {
@@ -59,7 +61,7 @@ export interface BacktestSummary {
 export async function submitBacktest(req: BacktestRequest): Promise<{ task_id: string }> {
   const res = await fetch(`${BASE}/api/backtest`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeader() },
     body: JSON.stringify(req),
   });
   if (!res.ok) {
@@ -70,13 +72,13 @@ export async function submitBacktest(req: BacktestRequest): Promise<{ task_id: s
 }
 
 export async function getBacktestStatus(taskId: string): Promise<BacktestStatusResponse> {
-  const res = await fetch(`${BASE}/api/backtest/${taskId}`);
+  const res = await fetch(`${BASE}/api/backtest/${taskId}`, { headers: authHeader() });
   if (!res.ok) throw new Error("Failed to fetch backtest status");
   return res.json();
 }
 
 export async function listBacktests(): Promise<BacktestSummary[]> {
-  const res = await fetch(`${BASE}/api/backtest`);
+  const res = await fetch(`${BASE}/api/backtest`, { headers: authHeader() });
   if (!res.ok) throw new Error("Failed to list backtests");
   const data = await res.json();
   return data.results;
