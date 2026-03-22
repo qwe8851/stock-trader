@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(docker compose:*)",
+      "Bash(curl -s http://localhost:8000/api/portfolio)",
+      "Bash(python3 -m json.tool)"
+    ]
+  }
+}

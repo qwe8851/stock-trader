@@ -19,11 +19,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from adapters.binance import BinanceAdapter
-from api.routers import health, ohlcv, websocket
+from api.routers import health, ohlcv, orders, portfolio, strategies, websocket
 from core.config import settings
 from core.logging import get_logger, setup_logging
 from db.redis import close_redis, init_redis
-from db.session import engine
+from db.session import engine as db_engine
+from engine.trading_engine import engine as trading_engine
 
 # Bootstrap logging before anything else
 setup_logging()
@@ -57,7 +58,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     )
     logger.info("Binance ticker background task started for BTCUSDT")
 
+    # Start trading engine in the background
+    _trading_task = asyncio.create_task(
+        trading_engine.run(),
+        name="trading-engine",
+    )
+    logger.info("Trading engine background task started")
+
     yield  # Application is running
+
+    # Stop trading engine
+    _trading_task.cancel()
+    try:
+        await _trading_task
+    except asyncio.CancelledError:
+        pass
 
     # ---- Shutdown ----
     logger.info("Shutting down Stock Trader API...")
@@ -74,7 +89,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await _binance_adapter.close()
 
     await close_redis()
-    await engine.dispose()
+    await db_engine.dispose()
     logger.info("Shutdown complete")
 
 
@@ -130,6 +145,9 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(ohlcv.router)
     app.include_router(websocket.router)
+    app.include_router(strategies.router)
+    app.include_router(orders.router)
+    app.include_router(portfolio.router)
 
     return app
 

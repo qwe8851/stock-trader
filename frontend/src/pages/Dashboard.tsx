@@ -14,6 +14,9 @@
  */
 import { useState } from "react";
 import CandlestickChart from "../components/charts/CandlestickChart";
+import { PortfolioCard } from "../components/portfolio/PortfolioCard";
+import { OrdersTable } from "../components/orders/OrdersTable";
+import { StrategyPanel } from "../components/strategies/StrategyPanel";
 import { usePriceFeed } from "../hooks/usePriceFeed";
 import { clsx } from "clsx";
 
@@ -205,9 +208,7 @@ export default function Dashboard() {
         />
         <StatCard
           label="Last Volume"
-          value={
-            latestCandle ? formatVolume(latestCandle.volume) : "—"
-          }
+          value={latestCandle ? formatVolume(latestCandle.volume) : "—"}
         />
         <StatCard
           label="Prev Close"
@@ -216,10 +217,25 @@ export default function Dashboard() {
       </div>
 
       {/* ------------------------------------------------------------------ */}
+      {/* Phase 2 panels                                                        */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="px-6 pb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-3">
+          <PortfolioCard />
+        </div>
+        <div className="lg:col-span-1">
+          <StrategyPanel />
+        </div>
+        <div className="lg:col-span-2">
+          <OrdersTable />
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
       {/* Footer                                                               */}
       {/* ------------------------------------------------------------------ */}
       <footer className="border-t border-gray-800 px-6 py-3 flex justify-between items-center text-xs text-gray-600">
-        <span>Phase 1 · Real-time BTC/USDT feed · Binance public API</span>
+        <span>Phase 2 · Trading Engine + Paper Trading · Binance public API</span>
         <span>{new Date().toLocaleDateString()}</span>
       </footer>
     </div>

@@ -14,6 +14,9 @@ export default {
         // Chart-friendly neutral palette
         surface: {
           DEFAULT: "#0f0f14",
+          1: "#16161f",
+          2: "#12121a",
+          3: "#1a1a24",
           50: "#1a1a24",
           100: "#16161f",
           200: "#12121a",

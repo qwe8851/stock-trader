@@ -55,6 +55,14 @@ class Settings(BaseSettings):
     # -------------------------------------------------------------------------
     LIVE_TRADING_ENABLED: bool = False
     PAPER_TRADING_MODE: bool = True
+    PAPER_INITIAL_BALANCE: float = 10000.0   # USD starting balance for paper trading
+
+    # -------------------------------------------------------------------------
+    # Risk Management
+    # -------------------------------------------------------------------------
+    RISK_MAX_POSITION_PCT: float = 0.02       # 2% of portfolio per trade
+    RISK_DAILY_LOSS_LIMIT_PCT: float = 0.05   # halt if daily drawdown > 5%
+    RISK_MAX_OPEN_POSITIONS: int = 3
 
     # -------------------------------------------------------------------------
     # CORS
