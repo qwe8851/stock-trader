@@ -44,6 +44,9 @@ dependencies = [
     # Logging
     "python-json-logger>=2.0.7",
 
+    # Strategy parameter optimization
+    "optuna>=3.6.0",
+
     # Sentiment analysis
     "transformers>=4.40.0",
     "torch>=2.2.0",

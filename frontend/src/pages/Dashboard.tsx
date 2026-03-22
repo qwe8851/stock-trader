@@ -122,6 +122,12 @@ export default function Dashboard() {
             분석
           </Link>
           <Link
+            to="/optimization"
+            className="px-3 py-1.5 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg transition-colors"
+          >
+            최적화
+          </Link>
+          <Link
             to="/backtest"
             className="px-3 py-1.5 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg transition-colors"
           >

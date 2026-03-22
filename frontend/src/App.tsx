@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Backtest from "./pages/Backtest";
 import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
+import Optimization from "./pages/Optimization";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
@@ -31,6 +32,10 @@ export default function App() {
         <Route
           path="/analytics"
           element={<ProtectedRoute><Analytics /></ProtectedRoute>}
+        />
+        <Route
+          path="/optimization"
+          element={<ProtectedRoute><Optimization /></ProtectedRoute>}
         />
 
         {/* Default */}
