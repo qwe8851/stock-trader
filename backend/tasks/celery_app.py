@@ -13,7 +13,8 @@ celery_app = Celery(
     "stock_trader",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
-    include=["tasks.backtest_tasks", "tasks.sentiment_tasks", "tasks.analytics_tasks", "tasks.optimization_tasks"],
+    include=["tasks.backtest_tasks", "tasks.sentiment_tasks", "tasks.analytics_tasks",
+             "tasks.optimization_tasks", "tasks.ml_tasks"],
 )
 
 celery_app.conf.update(

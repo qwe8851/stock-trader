@@ -25,7 +25,7 @@ from adapters.binance import BinanceAdapter
 from adapters.upbit import UpbitAdapter
 from api.routers import (
     analytics, api_keys, auth, backtest, exchange_settings, health, ohlcv,
-    optimization, orders, portfolio, sentiment, strategies, websocket,
+    optimization, orders, portfolio, prediction, sentiment, strategies, websocket,
 )
 from core.config import settings
 from core.logging import get_logger, setup_logging
@@ -174,6 +174,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router)
     app.include_router(api_keys.router)
     app.include_router(optimization.router)
+    app.include_router(prediction.router)
 
     return app
 

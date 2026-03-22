@@ -5,6 +5,7 @@ import Backtest from "./pages/Backtest";
 import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
 import Optimization from "./pages/Optimization";
+import Prediction from "./pages/Prediction";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
@@ -36,6 +37,10 @@ export default function App() {
         <Route
           path="/optimization"
           element={<ProtectedRoute><Optimization /></ProtectedRoute>}
+        />
+        <Route
+          path="/prediction"
+          element={<ProtectedRoute><Prediction /></ProtectedRoute>}
         />
 
         {/* Default */}
