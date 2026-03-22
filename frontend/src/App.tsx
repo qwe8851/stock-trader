@@ -6,6 +6,7 @@ import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
 import Optimization from "./pages/Optimization";
 import Prediction from "./pages/Prediction";
+import RiskDashboard from "./pages/RiskDashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
@@ -41,6 +42,10 @@ export default function App() {
         <Route
           path="/prediction"
           element={<ProtectedRoute><Prediction /></ProtectedRoute>}
+        />
+        <Route
+          path="/risk"
+          element={<ProtectedRoute><RiskDashboard /></ProtectedRoute>}
         />
 
         {/* Default */}

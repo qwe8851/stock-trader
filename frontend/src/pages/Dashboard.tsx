@@ -134,6 +134,12 @@ export default function Dashboard() {
             예측
           </Link>
           <Link
+            to="/risk"
+            className="px-3 py-1.5 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg transition-colors"
+          >
+            리스크
+          </Link>
+          <Link
             to="/backtest"
             className="px-3 py-1.5 text-sm text-gray-400 hover:text-white border border-gray-700 rounded-lg transition-colors"
           >

@@ -48,6 +48,11 @@ class TradingEngine:
             max_position_pct=settings.RISK_MAX_POSITION_PCT,
             daily_loss_limit_pct=settings.RISK_DAILY_LOSS_LIMIT_PCT,
             max_open_positions=settings.RISK_MAX_OPEN_POSITIONS,
+            use_kelly=settings.RISK_USE_KELLY,
+            kelly_lookback=settings.RISK_KELLY_LOOKBACK,
+            half_kelly=settings.RISK_HALF_KELLY,
+            strategy_drawdown_limit_pct=settings.RISK_STRATEGY_DRAWDOWN_LIMIT_PCT,
+            var_confidence=settings.RISK_VAR_CONFIDENCE,
         ))
         self._orders = OrderManager()
         # symbol -> list of active strategy instances
@@ -208,6 +213,10 @@ class TradingEngine:
         self._tick_count = getattr(self, "_tick_count", 0) + 1
         if self._tick_count % 100 == 0:
             await self._publish_portfolio_snapshot()
+            # Feed equity value into VaR curve
+            self._risk.push_equity(
+                self._orders.portfolio_value_usd(self._latest_prices)
+            )
 
         candle = Candle(
             time=data["time"],
@@ -240,14 +249,23 @@ class TradingEngine:
                              extra={"reason": reason, "signal": signal.action})
                 continue
 
-            size_usd = self._risk.position_size_usd(portfolio, signal.confidence)
+            size_usd = self._risk.position_size_usd(
+                portfolio, signal.confidence, self._orders.get_orders(500)
+            )
 
-            await self._orders.execute(
+            order = await self._orders.execute(
                 signal=signal,
                 size_usd=size_usd,
                 current_price=close,
                 adapter=self._adapter,
             )
+
+            # Record trade result for Kelly / per-strategy drawdown tracking
+            if order and "SELL" in order.get("side", ""):
+                pnl = order.get("pnl", 0.0)
+                strat = order.get("strategy", "")
+                if strat:
+                    self._risk.record_trade(strat, pnl, order)
 
     def _refresh_daily_start(self) -> None:
         today = datetime.now(timezone.utc).date()

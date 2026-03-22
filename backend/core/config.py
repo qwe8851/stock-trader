@@ -89,6 +89,17 @@ class Settings(BaseSettings):
     RISK_DAILY_LOSS_LIMIT_PCT: float = 0.05   # halt if daily drawdown > 5%
     RISK_MAX_OPEN_POSITIONS: int = 3
 
+    # Kelly Criterion position sizing
+    RISK_USE_KELLY: bool = True               # use Kelly when enough trade history
+    RISK_KELLY_LOOKBACK: int = 50             # trades used for Kelly calculation
+    RISK_HALF_KELLY: bool = True              # use half-Kelly (safer)
+
+    # Per-strategy drawdown circuit breaker
+    RISK_STRATEGY_DRAWDOWN_LIMIT_PCT: float = 0.15  # pause strategy if > 15% drawdown
+
+    # Value at Risk
+    RISK_VAR_CONFIDENCE: float = 0.95        # 95% VaR by default
+
     # -------------------------------------------------------------------------
     # Telegram Notifications (Phase 6)
     # Bot token: https://t.me/BotFather → /newbot
